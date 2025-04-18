@@ -1,5 +1,5 @@
 import os
-from app import db, User
+from app import db, User, app
 from werkzeug.security import generate_password_hash
 
 def add_cashier():
@@ -18,4 +18,5 @@ def add_cashier():
     print(f"Cashier '{username}' created successfully.")
 
 if __name__ == '__main__':
-    add_cashier()
+    with app.app_context():
+        add_cashier()
