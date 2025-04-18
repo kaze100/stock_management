@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Cashier Dashboard') }} - {{ _('Smart Inventory') }}{% endblock %}
+
+{% block content %}
+<h1>{{ _('Cashier Dashboard') }}</h1>
+
+<div class="dashboard-widgets">
+    <div class="widget widget-info">
+        <h3 class="widget-title">{{ _('Today\'s Sales') }}</h3>
+        <div class="widget-value">{{ today_sales|length }}</div>
+        <p class="widget-description">{{ _('Sales you\'ve made today') }}</p>
+    </div>
+    
+    <div class="widget widget-success">
+        <h3 class="widget-title">{{ _('Today\'s Revenue') }}</h3>
+        <div class="widget-value">RWF {{ "%.0f"|format(total_revenue) }}</div>
+        <p class="widget-description">{{ _('Revenue you\'ve generated today') }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>{{ _('Record New Sale') }}</h2>
+    </div>
+    <div class="card-body">
+        <!-- Product Search Form -->
+        <form method="GET" action="{{ url_for('cashier_dashboard') }}" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="{{ _('Search for products...') }}" value="{{ search_query }}">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">{{ _('Search') }}</button>
+                    {% if search_query %}
+                    <a href="{{ url_for('cashier_dashboard') }}" class="btn btn-secondary">{{ _('Clear') }}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+        
+        <form method="POST" action="{{ url_for('sell_product') }}">
+            <div class="form-group">
+                <label for="product_id" class="form-label">{{ _('Select Product') }}</label>
+                <select id="product_id" name="product_id" class="form-control" required>
+                    <option value="">{{ _('-- Select a product --') }}</option>
+                    {% for product in products %}
+                    <option value="{{ product.id }}">
+                        {{ product.name }} - RWF {{ "%.0f"|format(product.price) }} ({{ product.stock }} {{ _('in stock') }})
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if products|length == 0 %}
+                <small class="text-muted">{{ _('No products found matching your search.') }}</small>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="quantity" class="form-label">{{ _('Quantity') }}</label>
+                <input type="number" id="quantity" name="quantity" class="form-control" min="1" value="1" required>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">{{ _('Record Sale') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h2>{{ _('Today\'s Sales') }}</h2>
+    </div>
+    <div class="card-body">
+        {% if today_sales|length > 0 %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{{ _('Time') }}</th>
+                    <th>{{ _('Product') }}</th>
+                    <th>{{ _('Quantity') }}</th>
+                    <th>{{ _('Price') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in today_sales %}
+                <tr>
+                    <td>{{ sale.date_sold.strftime('%H:%M:%S') }}</td>
+                    <td>{{ sale.product.name }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>RWF {{ "%.0f"|format(sale.total_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>{{ _('You haven\'t recorded any sales today.') }}</p>
+        {% endif %}
+    </div>
+    <div class="card-footer">
+        <a href="{{ url_for('view_cashier_sales') }}" class="btn btn-primary">{{ _('View All My Sales') }}</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Sales Status') }} - {{ _('Smart Inventory') }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ _('Sales Status') }}</h2>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="widget {% if total_uncashed > 0 %}widget-warning{% else %}widget-success{% endif %}">
+                    <h3 class="widget-title">{{ _('Current Balance') }}</h3>
+                    <div class="widget-value">RWF {{ "%.0f"|format(total_uncashed) }}</div>
+                    <p class="widget-description">
+                        {% if total_uncashed > 0 %}
+                            {{ _('Amount to be paid to admin') }}
+                        {% else %}
+                            {{ _('No pending balance') }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>{{ _('Current Period Sales') }} {% if last_cashout_date %}({{ _('Since') }} {{ last_cashout_date.strftime('%Y-%m-%d %H:%M') }}){% else %}({{ _('All Time') }}){% endif %}</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if uncashed_sales|length > 0 %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>{{ _('Date & Time') }}</th>
+                                        <th>{{ _('Product') }}</th>
+                                        <th>{{ _('Quantity') }}</th>
+                                        <th>{{ _('Total') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sale in uncashed_sales %}
+                                    <tr>
+                                        <td>{{ sale.date_sold.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                        <td>{{ sale.product.name }}</td>
+                                        <td>{{ sale.quantity }}</td>
+                                        <td>RWF {{ "%.0f"|format(sale.total_price) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="text-right">{{ _('Total') }}</th>
+                                        <th>RWF {{ "%.0f"|format(total_uncashed) }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> {{ _('No pending sales. Your balance has been cleared.') }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>{{ _('Cashout History') }}</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_cashouts|length > 0 %}
+                        <ul class="list-group">
+                            {% for cashout in recent_cashouts %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ cashout.date.strftime('%Y-%m-%d') }}</strong><br>
+                                    <small>{{ _('Admin') }}: {{ cashout.admin.username }}</small>
+                                </div>
+                                <span class="badge badge-success badge-pill">RWF {{ "%.0f"|format(cashout.amount) }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> {{ _('No recent cashouts found.') }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>{{ _('Sales by Period') }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>{{ _('Period') }}</th>
+                                        <th>{{ _('Start Date') }}</th>
+                                        <th>{{ _('End Date') }}</th>
+                                        <th>{{ _('Sales Count') }}</th>
+                                        <th>{{ _('Total Amount') }}</th>
+                                        <th>{{ _('Status') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Current Period -->
+                                    <tr class="table-warning">
+                                        <td><strong>{{ _('Current Period') }}</strong></td>
+                                        <td>{% if last_cashout_date %}{{ last_cashout_date.strftime('%Y-%m-%d %H:%M') }}{% else %}{{ _('First Period') }}{% endif %}</td>
+                                        <td>{{ _('Present') }}</td>
+                                        <td>{{ uncashed_sales|length }}</td>
+                                        <td>RWF {{ "%.0f"|format(total_uncashed) }}</td>
+                                        <td><span class="badge badge-warning">{{ _('Pending') }}</span></td>
+                                    </tr>
+                                    
+                                    <!-- Previous Periods (limited to most recent) -->
+                                    {% for cashout in recent_cashouts %}
+                                    <tr>
+                                        <td>{{ _('Period') }} #{{ loop.index }}</td>
+                                        <td>{% if loop.index < recent_cashouts|length %}{{ recent_cashouts[loop.index].date.strftime('%Y-%m-%d %H:%M') }}{% else %}{{ _('Previous Period') }}{% endif %}</td>
+                                        <td>{{ cashout.date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>{{ cashout.sales|length }}</td>
+                                        <td>RWF {{ "%.0f"|format(cashout.amount) }}</td>
+                                        <td><span class="badge badge-success">{{ _('Cashed Out') }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <a href="{{ url_for('cashier_dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> {{ _('Back to Dashboard') }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

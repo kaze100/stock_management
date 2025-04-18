@@ -1,0 +1,3 @@
+2025-04-08 18:59:03,201 - i18n_fix - INFO - Fixing internationalization issues in app.py...
+2025-04-08 18:59:03,203 - i18n_fix - INFO - Created backup: app.py.i18n_fix_backup_20250408_185903
+2025-04-08 18:59:03,204 - i18n_fix - INFO - Successfully fixed internationalization issues in app.py

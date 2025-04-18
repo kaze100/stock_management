@@ -1,0 +1,10 @@
+2025-04-08 18:47:22,488 - complete_fix - INFO - Fixing all issues in app.py...
+2025-04-08 18:47:22,490 - complete_fix - INFO - Created backup: app.py.complete_fix_backup_20250408_184722
+2025-04-08 18:47:22,492 - complete_fix - INFO - Successfully fixed all issues in app.py
+2025-04-08 18:47:22,492 - complete_fix - INFO - Fixing all issues in templates...
+2025-04-08 18:47:22,496 - complete_fix - INFO - Created backup: templates/add_product.html.complete_fix_backup_20250408_184722
+2025-04-08 18:47:22,497 - complete_fix - INFO - Successfully fixed template: templates/add_product.html
+2025-04-08 18:47:22,501 - complete_fix - INFO - Created backup: templates/edit_product.html.complete_fix_backup_20250408_184722
+2025-04-08 18:47:22,502 - complete_fix - INFO - Successfully fixed template: templates/edit_product.html
+2025-04-08 18:47:22,503 - complete_fix - INFO - Created backup: templates/cashier_dashboard.html.complete_fix_backup_20250408_184722
+2025-04-08 18:47:22,505 - complete_fix - INFO - Successfully fixed template: templates/cashier_dashboard.html

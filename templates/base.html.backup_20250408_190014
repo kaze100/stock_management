@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="{{ g.lang_code }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ _('Smart Inventory') }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive-fixes.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">{{ _('Smart Inventory') }}</div>
+            <div class="user-info">
+                <div class="language-selector">
+                    <select id="language-select" onchange="changeLanguage(this.value)" aria-label="{{ _('Select language') }}">
+                        <option value="en" {% if g.lang_code == 'en' %}selected{% endif %}>{{ _('English') }}</option>
+                        <option value="rw" {% if g.lang_code == 'rw' %}selected{% endif %}>{{ _('Kinyarwanda') }}</option>
+                    </select>
+                </div>
+                <div class="user-role">{{ current_user.role.capitalize() }}</div>
+                <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger"><i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}</a>
+            </div>
+        </div>
+    </header>
+    
+    <nav class="nav">
+        <div class="container">
+            <ul class="nav-list">
+                {% if current_user.role == 'admin' %}
+                <li class="nav-item">
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-link {% if request.endpoint == 'admin_dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('manage_products') }}" class="nav-link {% if request.endpoint == 'manage_products' %}active{% endif %}">
+                        <i class="fas fa-box"></i> {{ _('Products') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('view_sales') }}" class="nav-link {% if request.endpoint == 'view_sales' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i> {{ _('Sales') }}
+                    </a>
+                </li>
+                {% elif current_user.role == 'cashier' %}
+                <li class="nav-item">
+                    <a href="{{ url_for('cashier_dashboard') }}" class="nav-link {% if request.endpoint == 'cashier_dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ url_for('view_cashier_sales') }}" class="nav-link {% if request.endpoint == 'view_cashier_sales' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i> {{ _('My Sales') }}
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+    {% endif %}
+    
+    <main class="main-content">
+        <div class="container fade-in">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-section">
+                <h3>{{ _('Smart Inventory') }}</h3>
+                <p>{{ _('Efficient inventory and sales management for your mini market business.') }}</p>
+            </div>
+            <div class="footer-section">
+                <h3>{{ _('Quick Links') }}</h3>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">{{ _('Home') }}</a></li>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.role == 'admin' %}
+                            <li><a href="{{ url_for('admin_dashboard') }}">{{ _('Dashboard') }}</a></li>
+                            <li><a href="{{ url_for('manage_products') }}">{{ _('Products') }}</a></li>
+                        {% elif current_user.role == 'cashier' %}
+                            <li><a href="{{ url_for('cashier_dashboard') }}">{{ _('Dashboard') }}</a></li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>{{ _('Language') }}</h3>
+                <ul>
+                    <li><a href="{{ url_for('set_language', language='en') }}">{{ _('English') }}</a></li>
+                    <li><a href="{{ url_for('set_language', language='rw') }}">{{ _('Kinyarwanda') }}</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; {{ _('2025 Smart Inventory. All rights reserved.') }}
+        </div>
+    </footer>
+    
+    <script>
+        function changeLanguage(lang) {
+            window.location.href = "{{ url_for('set_language', language='') }}" + lang;
+        }
+        
+        // Add fade-in animation to elements when they load
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.classList.add('fade-in');
+            });
+            
+            // Add touch-friendly behavior for mobile
+            if (window.innerWidth <= 768) {
+                // Make tables responsive
+                const tables = document.querySelectorAll('table');
+                tables.forEach(table => {
+                    if (!table.parentElement.classList.contains('table-responsive')) {
+                        const wrapper = document.createElement('div');
+                        wrapper.classList.add('table-responsive');
+                        table.parentNode.insertBefore(wrapper, table);
+                        wrapper.appendChild(table);
+                    }
+                });
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/category-progress.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

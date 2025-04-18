@@ -1,0 +1,476 @@
+from flask import Flask, render_template, redirect, url_for, flash, request, session, g
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+import os
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("app.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# Initialize Flask app
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'default-secret-key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///new_inventory.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['BABEL_DEFAULT_LOCALE'] = 'en'
+app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'locale'
+
+# Initialize SQLAlchemy
+db = SQLAlchemy(app)
+
+# Initialize LoginManager
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+login_manager.session_protection = 'strong'
+
+
+# Helper function for translations
+def _(text, **variables):
+    return text % variables if variables else text
+
+# Try to initialize Babel with error handling
+try:
+    from flask_babel import Babel
+    
+    @app.route('/set_language/<language>')
+    def set_language(language):
+        session['language'] = language
+        return redirect(request.referrer or url_for('index'))
+    
+    def get_locale():
+        return session.get('language', 'en')
+    
+    # Initialize Babel with the locale selector
+    babel = Babel(app, locale_selector=get_locale)
+    
+    # Import gettext after Babel is initialized
+    from flask_babel import gettext as flask_gettext
+    _ = flask_gettext
+    
+    @app.before_request
+    def before_request():
+        g._ = _
+    
+    has_babel = True
+    logger.info("Flask-Babel initialized successfully")
+    
+except Exception as e:
+    logger.warning(f"Flask-Babel initialization failed: {str(e)}")
+    has_babel = False
+    # Use the fallback translation function defined above
+
+# Database models
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    role = db.Column(db.String(10), nullable=False)  # 'admin' or 'cashier'
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(200))
+    category = db.Column(db.String(50), default='Uncategorized')
+    purchase_price = db.Column(db.Float, default=0)
+    price = db.Column(db.Float, nullable=False)
+    stock = db.Column(db.Integer, default=0)
+    low_stock_threshold = db.Column(db.Integer, default=10)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def is_low_stock(self):
+        return self.stock <= self.low_stock_threshold
+    
+    def get_profit_margin(self):
+        if self.purchase_price > 0:
+            return ((self.price - self.purchase_price) / self.price) * 100
+        return 100  # If purchase price is 0, profit margin is 100%
+
+class Sale(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    product = db.relationship('Product', backref=db.backref('sales', lazy=True))
+    quantity = db.Column(db.Integer, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)
+    cashier_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    cashier = db.relationship('User', backref=db.backref('sales', lazy=True))
+    date_sold = db.Column(db.DateTime, default=datetime.utcnow)
+
+@login_manager.user_loader
+def load_user(user_id):
+    # Simple user loader that returns the user by ID
+    try:
+        return User.query.get(int(user_id))
+    except Exception as e:
+        logger.error(f"Error loading user: {str(e)}")
+        return None
+
+@app.route('/')
+def index():
+    # Simple index route that just renders the login page
+    # No redirects that could cause loops
+    if current_user.is_authenticated:
+        if current_user.role == 'admin':
+            return redirect(url_for('admin_dashboard'))
+        elif current_user.role == 'cashier':
+            return redirect(url_for('cashier_dashboard'))
+    return render_template('login.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # If already logged in, redirect to appropriate dashboard
+    if current_user.is_authenticated:
+        if current_user.role == 'admin':
+            return redirect(url_for('admin_dashboard'))
+        elif current_user.role == 'cashier':
+            return redirect(url_for('cashier_dashboard'))
+    
+    # Handle login form submission
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        # Find the user
+        user = User.query.filter_by(username=username).first()
+        
+        # Check credentials
+        if user and user.check_password(password):
+            # Log in the user
+            login_user(user)
+            
+            # Redirect based on role
+            if user.role == 'admin':
+                return redirect(url_for('admin_dashboard'))
+            else:
+                return redirect(url_for('cashier_dashboard'))
+        else:
+            flash(_('Invalid username or password'), 'danger')
+    
+    # Show login form
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    # Clear the user session
+    logout_user()
+    
+    # Clear all session data to prevent issues
+    session.clear()
+    
+    # Notify the user
+    flash(_('You have been logged out'), 'info')
+    
+    # Redirect to login page
+    return redirect(url_for('login'))
+
+@app.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    try:
+        if current_user.role != 'admin':
+            flash(_('Access denied. Admin privileges required.'), 'danger')
+            return redirect(url_for('index'))
+        
+        # Get total products
+        total_products = Product.query.count()
+        
+        # Get low stock products
+        low_stock_products = Product.query.filter(Product.stock <= Product.low_stock_threshold).all()
+        
+        # Get total sales
+        total_sales = Sale.query.count()
+        
+        # Get total revenue
+        total_revenue = db.session.query(db.func.sum(Sale.total_price)).scalar() or 0
+        
+        # Get sales for today
+        today = datetime.utcnow().date()
+        today_sales = Sale.query.filter(
+            db.func.date(Sale.date_sold) == today
+        ).all()
+        
+        today_revenue = sum(sale.total_price for sale in today_sales)
+        
+        return render_template(
+            'admin_dashboard.html',
+            total_products=total_products,
+            low_stock_products=low_stock_products,
+            total_sales=total_sales,
+            total_revenue=total_revenue,
+            today_sales=len(today_sales),
+            today_revenue=today_revenue
+        )
+    except Exception as e:
+        logger.error(f"Error in admin_dashboard route: {str(e)}")
+        flash(_('An error occurred while loading the dashboard.'), 'danger')
+        return redirect(url_for('index'))
+
+@app.route('/admin/products')
+@login_required
+def manage_products():
+    try:
+        if current_user.role != 'admin':
+            flash(_('Access denied. Admin privileges required.'), 'danger')
+            return redirect(url_for('index'))
+        
+        products = Product.query.all()
+        return render_template('manage_products.html', products=products)
+    except Exception as e:
+        logger.error(f"Error in manage_products route: {str(e)}")
+        flash(_('An error occurred while loading products.'), 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/products/add', methods=['GET', 'POST'])
+@login_required
+def add_product():
+    try:
+        if current_user.role != 'admin':
+            flash(_('Access denied. Admin privileges required.'), 'danger')
+            return redirect(url_for('index'))
+        
+        if request.method == 'POST':
+            name = request.form.get('name')
+            description = request.form.get('description')
+            category = request.form.get('category')
+            purchase_price = float(request.form.get('purchase_price'))
+            price = float(request.form.get('price'))
+            stock = int(request.form.get('stock'))
+            low_stock_threshold = int(request.form.get('low_stock_threshold'))
+            
+            product = Product(
+                name=name,
+                description=description,
+                category=category,
+                purchase_price=purchase_price,
+                price=price,
+                stock=stock,
+                low_stock_threshold=low_stock_threshold
+            )
+            
+            db.session.add(product)
+            db.session.commit()
+            
+            flash(_('Product added successfully!'), 'success')
+            return redirect(url_for('manage_products'))
+        
+        return render_template('add_product.html')
+    except Exception as e:
+        logger.error(f"Error in add_product route: {str(e)}")
+        flash(_('An error occurred while adding the product.'), 'danger')
+        return redirect(url_for('manage_products'))
+
+@app.route('/admin/products/edit/<int:product_id>', methods=['GET', 'POST'])
+@login_required
+def edit_product(product_id):
+    try:
+        if current_user.role != 'admin':
+            flash(_('Access denied. Admin privileges required.'), 'danger')
+            return redirect(url_for('index'))
+        
+        product = Product.query.get_or_404(product_id)
+        
+        if request.method == 'POST':
+            product.name = request.form.get('name')
+            product.description = request.form.get('description')
+            product.category = request.form.get('category')
+            product.purchase_price = float(request.form.get('purchase_price'))
+            product.price = float(request.form.get('price'))
+            product.stock = int(request.form.get('stock'))
+            product.low_stock_threshold = int(request.form.get('low_stock_threshold'))
+            
+            db.session.commit()
+            
+            flash(_('Product updated successfully!'), 'success')
+            return redirect(url_for('manage_products'))
+        
+        return render_template('edit_product.html', product=product)
+    except Exception as e:
+        logger.error(f"Error in edit_product route: {str(e)}")
+        flash(_('An error occurred while editing the product.'), 'danger')
+        return redirect(url_for('manage_products'))
+
+@app.route('/cashier/dashboard')
+@login_required
+def cashier_dashboard():
+    try:
+        if current_user.role != 'cashier':
+            flash(_('Access denied. Cashier privileges required.'), 'danger')
+            return redirect(url_for('index'))
+        
+        # Get search query
+        search_query = request.args.get('search', '')
+        
+        try:
+            # Get products with stock > 0
+            if search_query:
+                products = Product.query.filter(
+                    Product.stock > 0,
+                    Product.name.ilike(f'%{search_query}%')
+                ).all()
+            else:
+                products = Product.query.filter(Product.stock > 0).all()
+            
+            logger.debug(f"Found {len(products)} products with stock > 0")
+        except Exception as e:
+            logger.error(f"Error in product search: {str(e)}")
+            products = []
+        
+        try:
+            # Get today's sales for this cashier
+            today = datetime.utcnow().date()
+            today_sales = Sale.query.filter(
+                Sale.cashier_id == current_user.id,
+                db.func.date(Sale.date_sold) == today
+            ).order_by(Sale.date_sold.desc()).all()
+            
+            # Calculate total revenue for today
+            total_revenue = sum(sale.total_price for sale in today_sales)
+            
+            logger.debug(f"Found {len(today_sales)} sales for today with total revenue {total_revenue}")
+        except Exception as e:
+            logger.error(f"Error in sales search: {str(e)}")
+            today_sales = []
+            total_revenue = 0
+        
+        return render_template(
+            'cashier_dashboard.html',
+            products=products,
+            today_sales=today_sales,
+            total_revenue=total_revenue,
+            search_query=search_query
+        )
+    except Exception as e:
+        logger.error(f"Unhandled error in cashier_dashboard: {str(e)}")
+        flash(_('An error occurred while loading the dashboard.'), 'danger')
+        return redirect(url_for('index'))
+
+@app.route('/cashier/sell', methods=['GET', 'POST'])
+@login_required
+def sell_product():
+    try:
+        if current_user.role != 'cashier':
+            flash(_('Access denied. Cashier privileges required.'), 'danger')
+            return redirect(url_for('index'))
+        
+        if request.method == 'POST':
+            product_id = request.form.get('product_id')
+            quantity = int(request.form.get('quantity'))
+            
+            product = Product.query.get_or_404(product_id)
+            
+            # Check if enough stock is available
+            if product.stock < quantity:
+                flash(_('Not enough stock available. Only {0} units left.', product.stock), 'danger')
+                return redirect(url_for('cashier_dashboard'))
+            
+            # Calculate total price
+            total_price = product.price * quantity
+            
+            # Create sale record
+            sale = Sale(
+                product_id=product_id,
+                quantity=quantity,
+                total_price=total_price,
+                cashier_id=current_user.id
+            )
+            
+            # Update product stock
+            product.stock -= quantity
+            
+            db.session.add(sale)
+            db.session.commit()
+            
+            flash(_('Sale recorded successfully!'), 'success')
+            return redirect(url_for('cashier_dashboard'))
+        
+        # If GET request, redirect to cashier dashboard
+        return redirect(url_for('cashier_dashboard'))
+    except Exception as e:
+        logger.error(f"Error in sell_product route: {str(e)}")
+        flash(_('An error occurred while processing the sale.'), 'danger')
+        return redirect(url_for('cashier_dashboard'))
+
+@app.route('/admin/products/delete/<int:product_id>', methods=['POST'])
+@login_required
+def delete_product(product_id):
+    try:
+        if current_user.role != 'admin':
+            flash(_('Access denied. Admin privileges required.'), 'danger')
+            return redirect(url_for('index'))
+        
+        product = Product.query.get_or_404(product_id)
+        
+        # Check if product has sales
+        if Sale.query.filter_by(product_id=product_id).first():
+            flash(_('Cannot delete product with sales records.'), 'danger')
+            return redirect(url_for('manage_products'))
+        
+        db.session.delete(product)
+        db.session.commit()
+        
+        flash(_('Product deleted successfully!'), 'success')
+        return redirect(url_for('manage_products'))
+    except Exception as e:
+        logger.error(f"Error in delete_product route: {str(e)}")
+        flash(_('An error occurred while deleting the product.'), 'danger')
+        return redirect(url_for('manage_products'))
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    logger.error(f"Internal server error: {str(e)}")
+    return render_template('500.html'), 500
+
+# Initialize the database
+
+# Initialize the database
+def initialize_database():
+    try:
+        logger.info("Initializing database")
+        db.create_all()
+        
+        # Check if admin user exists
+        admin = User.query.filter_by(username='renoir01').first()
+        if not admin:
+            admin = User(username='renoir01', role='admin')
+            admin.set_password('Renoir@654')
+            db.session.add(admin)
+            logger.info("Admin user created")
+        
+        # Check if cashier user exists
+        cashier = User.query.filter_by(username='epi').first()
+        if not cashier:
+            cashier = User(username='epi', role='cashier')
+            cashier.set_password('Epi@654')
+            db.session.add(cashier)
+            logger.info("Cashier user created")
+        
+        db.session.commit()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Error initializing database: {str(e)}")
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        initialize_database()
+    app.run(debug=True)

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Add Product') }} - {{ _('Smart Inventory') }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ _('Add New Product') }}</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_product') }}">
+            <div class="form-group">
+                <label for="name" class="form-label">{{ _('Product Name') }}</label>
+                <input type="text" id="name" name="name" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description" class="form-label">{{ _('Description') }}</label>
+                <textarea id="description" name="description" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="category" class="form-label">{{ _('Category') }}</label>
+                <select id="category" name="category" class="form-control" required>
+                    <option value="Grains">{{ _('Grains') }}</option>
+                    <option value="Vegetables">{{ _('Vegetables') }}</option>
+                    <option value="Fruits">{{ _('Fruits') }}</option>
+                    <option value="Dairy">{{ _('Dairy') }}</option>
+                    <option value="Juice">{{ _('Juice') }}</option>
+                    <option value="Alcohol">{{ _('Alcohol') }}</option>
+                    <option value="Snacks">{{ _('Snacks') }}</option>
+                    <option value="Household">{{ _('Household') }}</option>
+                    <option value="Other">{{ _('Other') }}</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="purchase_price" class="form-label">{{ _('Purchase Price') }}</label>
+                <div class="input-group">
+                    <span class="input-group-text">RWF</span>
+                    <input type="number" id="purchase_price" name="purchase_price" class="form-control" step="1" min="0" required>
+                </div>
+                <small class="form-text text-muted">{{ _('The price at which you purchased this product') }}</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="price" class="form-label">{{ _('Selling Price') }}</label>
+                <div class="input-group">
+                    <span class="input-group-text">RWF</span>
+                    <input type="number" id="price" name="price" class="form-control" step="1" min="0" required>
+                </div>
+                <small class="form-text text-muted">{{ _('The price at which you will sell this product') }}</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="stock" class="form-label">{{ _('Initial Stock') }}</label>
+                <input type="number" id="stock" name="stock" class="form-control" min="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="low_stock_threshold" class="form-label">{{ _('Low Stock Threshold') }}</label>
+                <input type="number" id="low_stock_threshold" name="low_stock_threshold" class="form-control" min="1" value="10" required>
+                <small class="form-text text-muted">{{ _('Stock level at which the system will alert you to restock') }}</small>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">{{ _('Add Product') }}</button>
+                <a href="{{ url_for('manage_products') }}" class="btn btn-danger">{{ _('Cancel') }}</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

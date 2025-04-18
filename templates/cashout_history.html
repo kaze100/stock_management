@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Cashout History') }} - {{ _('Smart Inventory') }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ _('Cashout History') }}</h2>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="widget widget-success">
+                    <h3 class="widget-title">{{ _('Total Cashed Out') }}</h3>
+                    <div class="widget-value">RWF {{ "%.0f"|format(total_cashed_out) }}</div>
+                    <p class="widget-description">{{ _('Total amount cashed out all time') }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>{{ _('Date & Time') }}</th>
+                        <th>{{ _('Cashier') }}</th>
+                        <th>{{ _('Admin') }}</th>
+                        <th>{{ _('Amount') }}</th>
+                        <th>{{ _('Note') }}</th>
+                        <th>{{ _('Action') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cashout in cashouts %}
+                    <tr>
+                        <td>{{ cashout.date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ cashout.cashier.username }}</td>
+                        <td>{{ cashout.admin.username }}</td>
+                        <td>RWF {{ "%.0f"|format(cashout.amount) }}</td>
+                        <td>{{ cashout.note or '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('cashout_details', cashout_id=cashout.id) }}" class="btn btn-info btn-sm">
+                                {{ _('Details') }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if not cashouts %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> {{ _('No cashout records found.') }}
+        </div>
+        {% endif %}
+        
+        <div class="mt-3">
+            <a href="{{ url_for('admin_cashout') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> {{ _('Back to Cashout Management') }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+2025-04-08 18:44:56,995 - remove_packaged_fields - INFO - Removing packaged product fields from app.py...
+2025-04-08 18:44:56,999 - remove_packaged_fields - INFO - Created backup: app.py.remove_packaged_fields_backup_20250408_184456
+2025-04-08 18:44:57,000 - remove_packaged_fields - INFO - Successfully removed packaged product fields from app.py
+2025-04-08 18:44:57,002 - remove_packaged_fields - INFO - Removing packaged product fields from templates...
+2025-04-08 18:44:57,003 - remove_packaged_fields - INFO - Created backup: templates/add_product.html.remove_packaged_fields_backup_20250408_184457
+2025-04-08 18:44:57,050 - remove_packaged_fields - INFO - Successfully updated template: templates/add_product.html
+2025-04-08 18:44:57,053 - remove_packaged_fields - INFO - Created backup: templates/edit_product.html.remove_packaged_fields_backup_20250408_184457
+2025-04-08 18:44:57,094 - remove_packaged_fields - INFO - Successfully updated template: templates/edit_product.html
+2025-04-08 18:44:57,098 - remove_packaged_fields - INFO - Created backup: templates/cashier_dashboard.html.remove_packaged_fields_backup_20250408_184457
+2025-04-08 18:44:57,148 - remove_packaged_fields - INFO - Successfully updated template: templates/cashier_dashboard.html

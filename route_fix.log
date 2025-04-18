@@ -1,0 +1,9 @@
+2025-04-08 19:01:33,760 - route_fix - INFO - Fixing base template...
+2025-04-08 19:01:33,807 - route_fix - INFO - Created backup: templates\base.html.route_fix_backup_20250408_190133
+2025-04-08 19:01:33,809 - route_fix - INFO - Replaced view_sales route with admin_dashboard
+2025-04-08 19:01:33,812 - route_fix - INFO - Successfully fixed base template
+2025-04-08 19:01:33,813 - route_fix - INFO - Adding missing view_sales route to app.py...
+2025-04-08 19:01:33,814 - route_fix - INFO - Created backup: app.py.route_fix_backup_20250408_190133
+2025-04-08 19:01:33,816 - route_fix - WARNING - Could not find end of delete_product function
+2025-04-08 19:01:33,817 - route_fix - INFO - Creating view_sales.html template...
+2025-04-08 19:01:33,818 - route_fix - INFO - view_sales.html template already exists

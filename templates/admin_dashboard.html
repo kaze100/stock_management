@@ -1,0 +1,515 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Admin Dashboard') }} - {{ _('Smart Inventory') }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>{{ _('Admin Dashboard') }}</h1>
+    <p class="dashboard-subtitle">{{ _('Overview of your inventory and sales') }}</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h2>{{ _('Daily Summary') }} ({{ today.strftime('%Y-%m-%d') }})</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col col-md-4">
+                <div class="widget widget-info">
+                    <i class="fas fa-shopping-cart widget-icon"></i>
+                    <h3 class="widget-title">{{ _('Today\'s Sales') }}</h3>
+                    <div class="widget-value">{{ today_sales_count }}</div>
+                    <p class="widget-description">{{ _('Sales made today') }}</p>
+                    <a href="{{ url_for('view_sales') }}?start_date={{ today.strftime('%Y-%m-%d') }}&end_date={{ today.strftime('%Y-%m-%d') }}" class="widget-link">{{ _('View today\'s sales') }} <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            
+            <div class="col col-md-4">
+                <div class="widget widget-success">
+                    <i class="fas fa-money-bill-wave widget-icon"></i>
+                    <h3 class="widget-title">{{ _('Today\'s Revenue') }}</h3>
+                    <div class="widget-value">RWF {{ "%.0f"|format(today_revenue) }}</div>
+                    <p class="widget-description">{{ _('Revenue generated today') }}</p>
+                    <a href="{{ url_for('view_sales') }}?start_date={{ today.strftime('%Y-%m-%d') }}&end_date={{ today.strftime('%Y-%m-%d') }}" class="widget-link">{{ _('View details') }} <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            
+            <div class="col col-md-4">
+                <div class="widget widget-warning">
+                    <i class="fas fa-chart-line widget-icon"></i>
+                    <h3 class="widget-title">{{ _('Today\'s Profit') }}</h3>
+                    <div class="widget-value">RWF {{ "%.0f"|format(today_profit) }}</div>
+                    <p class="widget-description">{{ _('Profit generated today') }}</p>
+                    <a href="{{ url_for('view_sales') }}?start_date={{ today.strftime('%Y-%m-%d') }}&end_date={{ today.strftime('%Y-%m-%d') }}" class="widget-link">{{ _('View details') }} <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h2>{{ _('Current Period Summary') }} ({{ _('Uncashed Sales') }})</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col col-md-4">
+                <div class="widget widget-info">
+                    <i class="fas fa-shopping-cart widget-icon"></i>
+                    <h3 class="widget-title">{{ _('Current Period Sales') }}</h3>
+                    <div class="widget-value">{{ current_period_sales|length }}</div>
+                    <p class="widget-description">{{ _('Uncashed sales') }}</p>
+                    <a href="{{ url_for('admin_cashout') }}" class="widget-link">{{ _('View cashout details') }} <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            
+            <div class="col col-md-4">
+                <div class="widget widget-success">
+                    <i class="fas fa-money-bill-wave widget-icon"></i>
+                    <h3 class="widget-title">{{ _('Current Period Revenue') }}</h3>
+                    <div class="widget-value">RWF {{ "%.0f"|format(current_period_revenue) }}</div>
+                    <p class="widget-description">{{ _('Revenue from uncashed sales') }}</p>
+                    <a href="{{ url_for('admin_cashout') }}" class="widget-link">{{ _('Manage cashouts') }} <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            
+            <div class="col col-md-4">
+                <div class="widget widget-warning">
+                    <i class="fas fa-chart-line widget-icon"></i>
+                    <h3 class="widget-title">{{ _('Current Period Profit') }}</h3>
+                    <div class="widget-value">RWF {{ "%.0f"|format(current_period_profit) }}</div>
+                    <p class="widget-description">{{ _('Profit from uncashed sales') }}</p>
+                    <a href="{{ url_for('admin_cashout') }}" class="widget-link">{{ _('Manage cashouts') }} <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h2>{{ _('All-Time Summary') }}</h2>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col col-md-3">
+                <div class="widget widget-primary">
+                    <i class="fas fa-box-open widget-icon"></i>
+                    <h3 class="widget-title">{{ _('Total Products') }}</h3>
+                    <div class="widget-value">{{ total_products }}</div>
+                    <p class="widget-description">{{ _('Products in inventory') }}</p>
+                    <a href="{{ url_for('manage_products') }}" class="widget-link">{{ _('View all products') }} <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            
+            <div class="col col-md-3">
+                <div class="widget widget-danger">
+                    <i class="fas fa-exclamation-triangle widget-icon"></i>
+                    <h3 class="widget-title">{{ _('Low Stock Items') }}</h3>
+                    <div class="widget-value {% if low_stock_products|length > 0 %}text-danger{% endif %}">
+                        {{ low_stock_products|length }}
+                    </div>
+                    <p class="widget-description">{{ _('Products that need restocking') }}</p>
+                    {% if low_stock_products|length > 0 %}
+                    <a href="#low-stock-section" class="widget-link">{{ _('View details') }} <i class="fas fa-arrow-right"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col col-md-3">
+                <div class="widget widget-info">
+                    <i class="fas fa-shopping-cart widget-icon"></i>
+                    <h3 class="widget-title">{{ _('All-Time Sales') }}</h3>
+                    <div class="widget-value">{{ total_sales_count }}</div>
+                    <p class="widget-description">{{ _('Total sales made all time') }}</p>
+                    <a href="{{ url_for('view_sales') }}" class="widget-link">{{ _('View all sales') }} <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            
+            <div class="col col-md-3">
+                <div class="widget widget-success">
+                    <i class="fas fa-money-bill-wave widget-icon"></i>
+                    <h3 class="widget-title">{{ _('All-Time Revenue') }}</h3>
+                    <div class="widget-value">RWF {{ "%.0f"|format(total_revenue) }}</div>
+                    <p class="widget-description">{{ _('Total revenue all time') }}</p>
+                    <a href="{{ url_for('view_sales') }}" class="widget-link">{{ _('View sales report') }} <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>{{ _('Product Performance Analytics') }}</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <ul class="nav nav-tabs" id="productPerformanceTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="today-tab" data-bs-toggle="tab" data-bs-target="#today" type="button" role="tab" aria-controls="today" aria-selected="true">{{ _('Today') }}</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="current-period-tab" data-bs-toggle="tab" data-bs-target="#current-period" type="button" role="tab" aria-controls="current-period" aria-selected="false">{{ _('Uncashed Sales') }}</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="all-time-tab" data-bs-toggle="tab" data-bs-target="#all-time" type="button" role="tab" aria-controls="all-time" aria-selected="false">{{ _('All Time') }}</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="productPerformanceTabContent">
+                    <!-- Today's Performance -->
+                    <div class="tab-pane fade show active" id="today" role="tabpanel" aria-labelledby="today-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>{{ _('By Quantity Sold Today') }}</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{ _('Product') }}</th>
+                                                <th>{{ _('Quantity Sold') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if top_products_by_revenue_today %}
+                                                {% for product in top_products_by_revenue_today|sort(attribute='quantity', reverse=true) %}
+                                                <tr>
+                                                    <td>{{ loop.index }}</td>
+                                                    <td>{{ product.product.name }}</td>
+                                                    <td>{{ product.quantity }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="3" class="text-center">{{ _('No sales recorded today') }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>{{ _('By Revenue Today') }}</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{ _('Product') }}</th>
+                                                <th>{{ _('Revenue') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if top_products_by_revenue_today %}
+                                                {% for product in top_products_by_revenue_today %}
+                                                <tr>
+                                                    <td>{{ loop.index }}</td>
+                                                    <td>{{ product.product.name }}</td>
+                                                    <td>RWF {{ "%.0f"|format(product.revenue) }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="3" class="text-center">{{ _('No sales recorded today') }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Period Performance -->
+                    <div class="tab-pane fade" id="current-period" role="tabpanel" aria-labelledby="current-period-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>{{ _('By Quantity Sold (Uncashed Sales)') }}</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{ _('Product') }}</th>
+                                                <th>{{ _('Quantity Sold') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if top_products_by_revenue_current_period %}
+                                                {% for product in top_products_by_revenue_current_period|sort(attribute='quantity', reverse=true) %}
+                                                <tr>
+                                                    <td>{{ loop.index }}</td>
+                                                    <td>{{ product.product.name }}</td>
+                                                    <td>{{ product.quantity }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="3" class="text-center">{{ _('No uncashed sales recorded') }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>{{ _('By Revenue (Uncashed Sales)') }}</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{ _('Product') }}</th>
+                                                <th>{{ _('Revenue') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if top_products_by_revenue_current_period %}
+                                                {% for product in top_products_by_revenue_current_period %}
+                                                <tr>
+                                                    <td>{{ loop.index }}</td>
+                                                    <td>{{ product.product.name }}</td>
+                                                    <td>RWF {{ "%.0f"|format(product.revenue) }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="3" class="text-center">{{ _('No uncashed sales recorded') }}</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- All-Time Performance -->
+                    <div class="tab-pane fade" id="all-time" role="tabpanel" aria-labelledby="all-time-tab">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>{{ _('By Quantity Sold (All-Time)') }}</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{ _('Product') }}</th>
+                                                <th>{{ _('Quantity Sold') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for product in top_products_by_quantity %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>{{ product.product.name }}</td>
+                                                <td>{{ product.quantity }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>{{ _('By Revenue (All-Time)') }}</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>{{ _('Product') }}</th>
+                                                <th>{{ _('Revenue') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for product in top_products_by_revenue %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>{{ product.product.name }}</td>
+                                                <td>RWF {{ "%.0f"|format(product.revenue) }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col col-md-3">
+        <div class="widget widget-secondary">
+            <i class="fas fa-cash-register widget-icon"></i>
+            <h3 class="widget-title">{{ _('Cashout') }}</h3>
+            <div class="widget-value"><i class="fas fa-sync"></i></div>
+            <p class="widget-description">{{ _('Manage cashier payments') }}</p>
+            <a href="{{ url_for('admin_cashout') }}" class="widget-link">{{ _('Go to cashout') }} <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+    
+    <div class="col col-md-9">
+        <div class="card" id="low-stock-section">
+            <div class="card-header">
+                <h2><i class="fas fa-exclamation-circle"></i> {{ _('Low Stock Products') }}</h2>
+            </div>
+            <div class="card-body">
+                {% if low_stock_products|length > 0 %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{{ _('Product') }}</th>
+                                <th>{{ _('Category') }}</th>
+                                <th>{{ _('Current Stock') }}</th>
+                                <th>{{ _('Threshold') }}</th>
+                                <th>{{ _('Action') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in low_stock_products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td><span class="badge category-badge">{{ product.category }}</span></td>
+                                <td class="text-danger">{{ product.stock }}</td>
+                                <td>{{ product.low_stock_threshold }}</td>
+                                <td>
+                                    <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i> {{ _('Update') }}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> {{ _('All products are well stocked!') }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-pie"></i> {{ _('Inventory by Category') }}</h2>
+            </div>
+            <div class="card-body">
+                {% set categories = {} %}
+                {% for product in products %}
+                    {% if product.category in categories %}
+                        {% set _ = categories.update({product.category: categories[product.category] + 1}) %}
+                    {% else %}
+                        {% set _ = categories.update({product.category: 1}) %}
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="category-stats">
+                    {% for category, count in categories.items() %}
+                    <div class="category-stat-item">
+                        <div class="category-header">
+                            <h4>{{ category }}</h4>
+                        </div>
+                        <div class="category-body">
+                            <div class="category-count">{{ count }}</div>
+                            <div class="category-bar">
+                                <div class="category-progress" data-width="{{ (count / total_products * 100)|round }}"></div>
+                            </div>
+                            <div class="category-percent">{{ (count / total_products * 100)|round }}%</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-tasks"></i> {{ _('Quick Actions') }}</h2>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <a href="{{ url_for('add_product') }}" class="quick-action-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>{{ _('Add New Product') }}</span>
+                    </a>
+                    <a href="{{ url_for('view_sales') }}" class="quick-action-btn">
+                        <i class="fas fa-chart-line"></i>
+                        <span>{{ _('View Sales Report') }}</span>
+                    </a>
+                    <a href="{{ url_for('manage_products') }}" class="quick-action-btn">
+                        <i class="fas fa-boxes"></i>
+                        <span>{{ _('Manage Products') }}</span>
+                    </a>
+                    <a href="{{ url_for('admin_cashout') }}" class="quick-action-btn">
+                        <i class="fas fa-cash-register"></i>
+                        <span>{{ _('Cashout Management') }}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Define chart data as a global variable
+    var productChartData = {
+        labels: [],
+        revenueData: [],
+        profitData: [],
+        quantityData: [],
+        revenueLabel: "{{ _('Revenue (RWF)') }}",
+        profitLabel: "{{ _('Profit (RWF)') }}",
+        quantityLabel: "{{ _('Quantity Sold') }}",
+        xAxisLabel: "{{ _('Products') }}",
+        yAxisLabel: "{{ _('Amount (RWF)') }}",
+        quantityAxisLabel: "{{ _('Units Sold') }}",
+        quantityUnit: "{{ _('units') }}"
+    };
+    
+    // Parse data from hidden element
+    document.addEventListener('DOMContentLoaded', function() {
+        var dataElement = document.getElementById('product-data');
+        if (dataElement) {
+            var productData = JSON.parse(dataElement.textContent);
+            productChartData.labels = productData.labels;
+            productChartData.revenueData = productData.revenueData;
+            productChartData.profitData = productData.profitData;
+            productChartData.quantityData = productData.quantityData;
+            productChartData.revenueLabel = productData.revenueLabel;
+            productChartData.profitLabel = productData.profitLabel;
+            productChartData.quantityLabel = productData.quantityLabel;
+            productChartData.xAxisLabel = productData.xAxisLabel;
+            productChartData.yAxisLabel = productData.yAxisLabel;
+            productChartData.quantityAxisLabel = productData.quantityAxisLabel;
+            productChartData.quantityUnit = productData.quantityUnit;
+        }
+    });
+</script>
+<script src="{{ url_for('static', filename='js/product-performance.js') }}"></script>
+{% endblock %}

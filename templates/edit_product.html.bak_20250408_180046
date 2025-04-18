@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Edit Product') }} - {{ _('Smart Inventory') }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ _('Edit Product') }}</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('edit_product', product_id=product.id) }}">
+            <div class="form-group">
+                <label for="name" class="form-label">{{ _('Product Name') }}</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ product.name }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description" class="form-label">{{ _('Description') }}</label>
+                <textarea id="description" name="description" class="form-control" rows="3">{{ product.description }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="category" class="form-label">{{ _('Category') }}</label>
+                <select id="category" name="category" class="form-control" required>
+                    <option value="Grains" {% if product.category == 'Grains' %}selected{% endif %}>{{ _('Grains') }}</option>
+                    <option value="Vegetables" {% if product.category == 'Vegetables' %}selected{% endif %}>{{ _('Vegetables') }}</option>
+                    <option value="Fruits" {% if product.category == 'Fruits' %}selected{% endif %}>{{ _('Fruits') }}</option>
+                    <option value="Dairy" {% if product.category == 'Dairy' %}selected{% endif %}>{{ _('Dairy') }}</option>
+                    <option value="Juice" {% if product.category == 'Juice' %}selected{% endif %}>{{ _('Juice') }}</option>
+                    <option value="Alcohol" {% if product.category == 'Alcohol' %}selected{% endif %}>{{ _('Alcohol') }}</option>
+                    <option value="Snacks" {% if product.category == 'Snacks' %}selected{% endif %}>{{ _('Snacks') }}</option>
+                    <option value="Household" {% if product.category == 'Household' %}selected{% endif %}>{{ _('Household') }}</option>
+                    <option value="Other" {% if product.category == 'Other' %}selected{% endif %}>{{ _('Other') }}</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="purchase_price" class="form-label">{{ _('Purchase Price') }}</label>
+                <div class="input-group">
+                    <span class="input-group-text">RWF</span>
+                    <input type="number" id="purchase_price" name="purchase_price" class="form-control" step="1" min="0" value="{{ product.purchase_price }}" required>
+                </div>
+                <small class="form-text text-muted">{{ _('The price at which you purchased this product') }}</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="price" class="form-label">{{ _('Selling Price') }}</label>
+                <div class="input-group">
+                    <span class="input-group-text">RWF</span>
+                    <input type="number" id="price" name="price" class="form-control" step="1" min="0" value="{{ product.price }}" required>
+                </div>
+                <small class="form-text text-muted">{{ _('The price at which you will sell this product') }}</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="stock" class="form-label">{{ _('Current Stock') }}</label>
+                <input type="number" id="stock" name="stock" class="form-control" min="0" value="{{ product.stock }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="low_stock_threshold" class="form-label">{{ _('Low Stock Threshold') }}</label>
+                <input type="number" id="low_stock_threshold" name="low_stock_threshold" class="form-control" min="1" value="{{ product.low_stock_threshold }}" required>
+                <small class="form-text text-muted">{{ _('Stock level at which the system will alert you to restock') }}</small>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">{{ _('Update Product') }}</button>
+                <a href="{{ url_for('manage_products') }}" class="btn btn-danger">{{ _('Cancel') }}</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

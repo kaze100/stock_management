@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Edit Product') }} - {{ _('Smart Inventory') }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ _('Edit Product') }}</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('edit_product', product_id=product.id) }}">
+            <div class="form-group">
+                <label for="name" class="form-label">{{ _('Product Name') }}</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ product.name }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description" class="form-label">{{ _('Description') }}</label>
+                <textarea id="description" name="description" class="form-control" rows="3">{{ product.description }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="category" class="form-label">{{ _('Category') }}</label>
+                <select id="category" name="category" class="form-control" required>
+                    <option value="Grains" {% if product.category == 'Grains' %}selected{% endif %}>{{ _('Grains') }}</option>
+                    <option value="Vegetables" {% if product.category == 'Vegetables' %}selected{% endif %}>{{ _('Vegetables') }}</option>
+                    <option value="Fruits" {% if product.category == 'Fruits' %}selected{% endif %}>{{ _('Fruits') }}</option>
+                    <option value="Dairy" {% if product.category == 'Dairy' %}selected{% endif %}>{{ _('Dairy') }}</option>
+                    <option value="Juice" {% if product.category == 'Juice' %}selected{% endif %}>{{ _('Juice') }}</option>
+                    <option value="Alcohol" {% if product.category == 'Alcohol' %}selected{% endif %}>{{ _('Alcohol') }}</option>
+                    <option value="Snacks" {% if product.category == 'Snacks' %}selected{% endif %}>{{ _('Snacks') }}</option>
+                    <option value="Household" {% if product.category == 'Household' %}selected{% endif %}>{{ _('Household') }}</option>
+                    <option value="Other" {% if product.category == 'Other' %}selected{% endif %}>{{ _('Other') }}</option>
+                </select>
+            </div>
+            
+            <!-- Package Options -->
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" id="is_packaged" name="is_packaged" class="form-check-input" {% if product.is_packaged %}checked{% endif %}>
+                    <label for="is_packaged" class="form-check-label">{{ _('This product is sold in packages but can also be sold individually') }}</label>
+                </div>
+            </div>
+            
+            <div id="package-options" class="package-options">
+                <div class="form-group">
+                    <label for="units_per_package" class="form-label">{{ _('Units Per Package') }}</label>
+                    <input type="number" id="units_per_package" name="units_per_package" class="form-control" min="1" value="{{ product.units_per_package }}">
+                    <small class="form-text text-muted">{{ _('How many individual units are in each package') }}</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="individual_price" class="form-label">{{ _('Individual Unit Price') }}</label>
+                    <div class="input-group">
+                        <span class="input-group-text">RWF</span>
+                        <input type="number" id="individual_price" name="individual_price" class="form-control" step="1" min="0" value="{{ product.individual_price }}">
+                    </div>
+                    <small class="form-text text-muted">{{ _('The price when selling a single unit (not the whole package)') }}</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="individual_stock" class="form-label">{{ _('Individual Units Stock') }}</label>
+                    <input type="number" id="individual_stock" name="individual_stock" class="form-control" min="0" value="{{ product.individual_stock }}">
+                    <small class="form-text text-muted">{{ _('How many individual units (not packages) you have in stock') }}</small>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="purchase_price" class="form-label">{{ _('Purchase Price') }}</label>
+                <div class="input-group">
+                    <span class="input-group-text">RWF</span>
+                    <input type="number" id="purchase_price" name="purchase_price" class="form-control" step="1" min="0" value="{{ product.purchase_price }}" required>
+                </div>
+                <small class="form-text text-muted">{{ _('The price at which you purchased this product') }}</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="price" class="form-label" id="price-label">{{ _('Selling Price') }}</label>
+                <div class="input-group">
+                    <span class="input-group-text">RWF</span>
+                    <input type="number" id="price" name="price" class="form-control" step="1" min="0" value="{{ product.price }}" required>
+                </div>
+                <small class="form-text text-muted" id="price-help">{{ _('The price at which you will sell this product') }}</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="stock" class="form-label" id="stock-label">{{ _('Current Stock') }}</label>
+                <input type="number" id="stock" name="stock" class="form-control" min="0" value="{{ product.stock }}" required>
+                <small class="form-text text-muted" id="stock-help"></small>
+            </div>
+            
+            <div class="form-group">
+                <label for="low_stock_threshold" class="form-label">{{ _('Low Stock Threshold') }}</label>
+                <input type="number" id="low_stock_threshold" name="low_stock_threshold" class="form-control" min="1" value="{{ product.low_stock_threshold }}" required>
+                <small class="form-text text-muted">{{ _('Stock level at which the system will alert you to restock') }}</small>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">{{ _('Update Product') }}</button>
+                <a href="{{ url_for('manage_products') }}" class="btn btn-danger">{{ _('Cancel') }}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const isPackagedCheckbox = document.getElementById('is_packaged');
+        const packageOptions = document.getElementById('package-options');
+        const priceLabel = document.getElementById('price-label');
+        const priceHelp = document.getElementById('price-help');
+        const stockLabel = document.getElementById('stock-label');
+        const stockHelp = document.getElementById('stock-help');
+        
+        function togglePackageOptions() {
+            if (isPackagedCheckbox.checked) {
+                packageOptions.style.display = 'block';
+                priceLabel.textContent = "{{ _('Package Selling Price') }}";
+                priceHelp.textContent = "{{ _('The price at which you will sell the complete package') }}";
+                stockLabel.textContent = "{{ _('Package Stock') }}";
+                stockHelp.textContent = "{{ _('How many complete packages you have in stock') }}";
+            } else {
+                packageOptions.style.display = 'none';
+                priceLabel.textContent = "{{ _('Selling Price') }}";
+                priceHelp.textContent = "{{ _('The price at which you will sell this product') }}";
+                stockLabel.textContent = "{{ _('Current Stock') }}";
+                stockHelp.textContent = "";
+            }
+        }
+        
+        isPackagedCheckbox.addEventListener('change', togglePackageOptions);
+        togglePackageOptions(); // Initialize on page load
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('Cashier Dashboard') }} - {{ _('Smart Inventory') }}{% endblock %}
+
+{% block content %}
+<h1>{{ _('Cashier Dashboard') }}</h1>
+
+<div class="dashboard-widgets">
+    <div class="widget widget-info">
+        <h3 class="widget-title">{{ _('Today\'s Sales') }}</h3>
+        <div class="widget-value">{{ today_sales|length }}</div>
+        <p class="widget-description">{{ _('Sales you\'ve made today') }}</p>
+    </div>
+    
+    <div class="widget widget-success">
+        <h3 class="widget-title">{{ _('Today\'s Revenue') }}</h3>
+        <div class="widget-value">RWF {{ "%.0f"|format(total_revenue) }}</div>
+        <p class="widget-description">{{ _('Revenue you\'ve generated today') }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2>{{ _('Record New Sale') }}</h2>
+    </div>
+    <div class="card-body">
+        <!-- Product Search Form -->
+        <form method="GET" action="{{ url_for('cashier_dashboard') }}" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="search" class="form-control" placeholder="{{ _('Search for products...') }}" value="{{ search_query }}">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">{{ _('Search') }}</button>
+                    {% if search_query %}
+                    <a href="{{ url_for('cashier_dashboard') }}" class="btn btn-secondary">{{ _('Clear') }}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+        
+        <form method="POST" action="{{ url_for('sell_product') }}" id="sale-form">
+            <div class="form-group">
+                <label for="product_id" class="form-label">{{ _('Select Product') }}</label>
+                <select id="product_id" name="product_id" class="form-control" required>
+                    <option value="">{{ _('-- Select a product --') }}</option>
+                    {% for product in products %}
+                    <option value="{{ product.id }}" data-is-packaged="{{ product.is_packaged|lower }}" data-units-per-package="{{ product.units_per_package }}" data-individual-price="{{ product.individual_price }}" data-package-price="{{ product.price }}" data-package-stock="{{ product.stock }}" data-individual-stock="{{ product.individual_stock }}">
+                        {{ product.name }} - 
+                        {% if product.is_packaged %}
+                            {{ _('Package') }}: RWF {{ "%.0f"|format(product.price) }} ({{ product.stock }} {{ _('packages') }}), 
+                            {{ _('Unit') }}: RWF {{ "%.0f"|format(product.individual_price) }} ({{ product.individual_stock }} {{ _('units') }})
+                        {% else %}
+                            RWF {{ "%.0f"|format(product.price) }} ({{ product.stock }} {{ _('in stock') }})
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% if products|length == 0 %}
+                <small class="text-muted">{{ _('No products found matching your search.') }}</small>
+                {% endif %}
+            </div>
+            
+            <div id="package-options" class="package-options hidden">
+                <div class="form-group">
+                    <label class="form-label">{{ _('Sale Type') }}</label>
+                    <div class="form-check">
+                        <input type="radio" id="sale_type_package" name="sale_type" value="package" class="form-check-input" checked>
+                        <label for="sale_type_package" class="form-check-label">{{ _('Sell as package') }}</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="radio" id="sale_type_individual" name="sale_type" value="individual" class="form-check-input">
+                        <label for="sale_type_individual" class="form-check-label">{{ _('Sell as individual units') }}</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="quantity" class="form-label" id="quantity-label">{{ _('Quantity') }}</label>
+                <input type="number" id="quantity" name="quantity" class="form-control" min="1" value="1" required>
+                <small id="quantity-help" class="form-text text-muted"></small>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">{{ _('Record Sale') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h2>{{ _('Today\'s Sales') }}</h2>
+    </div>
+    <div class="card-body">
+        {% if today_sales|length > 0 %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{{ _('Time') }}</th>
+                    <th>{{ _('Product') }}</th>
+                    <th>{{ _('Quantity') }}</th>
+                    <th>{{ _('Price') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in today_sales %}
+                <tr>
+                    <td>{{ sale.date_sold.strftime('%H:%M:%S') }}</td>
+                    <td>{{ sale.product.name }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>RWF {{ "%.0f"|format(sale.total_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>{{ _('You haven\'t recorded any sales today.') }}</p>
+        {% endif %}
+    </div>
+    <div class="card-footer">
+        <a href="{{ url_for('view_cashier_sales') }}" class="btn btn-primary">{{ _('View All My Sales') }}</a>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productSelect = document.getElementById('product_id');
+        const packageOptions = document.getElementById('package-options');
+        const quantityLabel = document.getElementById('quantity-label');
+        const quantityHelp = document.getElementById('quantity-help');
+        const quantityInput = document.getElementById('quantity');
+        const saleForm = document.getElementById('sale-form');
+        const saleTypePackage = document.getElementById('sale_type_package');
+        const saleTypeIndividual = document.getElementById('sale_type_individual');
+        
+        function updateProductOptions() {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            
+            if (selectedOption.value) {
+                const isPackaged = selectedOption.dataset.isPackaged === 'true';
+                const unitsPerPackage = parseInt(selectedOption.dataset.unitsPerPackage);
+                const packageStock = parseInt(selectedOption.dataset.packageStock);
+                const individualStock = parseInt(selectedOption.dataset.individualStock);
+                
+                if (isPackaged) {
+                    packageOptions.classList.remove('hidden');
+                    
+                    // Update quantity label and help text based on sale type
+                    updateQuantityLabel();
+                    
+                    // Set max quantity based on available stock
+                    if (saleTypePackage.checked) {
+                        quantityInput.max = packageStock;
+                    } else {
+                        quantityInput.max = individualStock;
+                    }
+                } else {
+                    packageOptions.classList.add('hidden');
+                    quantityLabel.textContent = "{{ _('Quantity') }}";
+                    quantityHelp.textContent = "";
+                    quantityInput.max = parseInt(selectedOption.dataset.packageStock);
+                }
+            } else {
+                packageOptions.classList.add('hidden');
+                quantityLabel.textContent = "{{ _('Quantity') }}";
+                quantityHelp.textContent = "";
+            }
+        }
+        
+        function updateQuantityLabel() {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            
+            if (selectedOption.value && selectedOption.dataset.isPackaged === 'true') {
+                if (saleTypePackage.checked) {
+                    quantityLabel.textContent = "{{ _('Package Quantity') }}";
+                    quantityHelp.textContent = "{{ _('Number of complete packages to sell') }}";
+                    quantityInput.max = parseInt(selectedOption.dataset.packageStock);
+                } else {
+                    quantityLabel.textContent = "{{ _('Individual Unit Quantity') }}";
+                    quantityHelp.textContent = "{{ _('Number of individual units to sell') }}";
+                    quantityInput.max = parseInt(selectedOption.dataset.individualStock);
+                }
+            }
+        }
+        
+        // Add event listeners
+        productSelect.addEventListener('change', updateProductOptions);
+        saleTypePackage.addEventListener('change', updateQuantityLabel);
+        saleTypeIndividual.addEventListener('change', updateQuantityLabel);
+        
+        // Initialize on page load
+        updateProductOptions();
+        
+        // Add hidden field for sale type before form submission
+        saleForm.addEventListener('submit', function(e) {
+            const selectedOption = productSelect.options[productSelect.selectedIndex];
+            
+            if (selectedOption.value && selectedOption.dataset.isPackaged === 'true') {
+                // Create hidden field for sale_type if not already selected by radio buttons
+                if (!document.querySelector('input[name="sale_type"]:checked')) {
+                    const hiddenField = document.createElement('input');
+                    hiddenField.type = 'hidden';
+                    hiddenField.name = 'sale_type';
+                    hiddenField.value = 'package'; // Default to package
+                    saleForm.appendChild(hiddenField);
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

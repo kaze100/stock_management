@@ -1,0 +1,293 @@
+# Kinyarwanda translations for Smart Inventory System.
+# Copyright (C) 2025 Smart Inventory Team
+msgid ""
+msgstr ""
+"Project-Id-Version: Smart Inventory 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-08 01:17+0200\n"
+"PO-Revision-Date: 2025-04-08 01:17+0200\n"
+"Last-Translator: Renoir\n"
+"Language-Team: Kinyarwanda\n"
+"Language: rw\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Invalid username or password"
+msgstr "Izina ry'ukoresha cyangwa ijambo ry'ibanga biratari byo"
+
+msgid "Access denied. Admin privileges required."
+msgstr "Ntibyemewe. Uburenganzira bw'umuyobozi bukenewe."
+
+msgid "Access denied. Cashier privileges required."
+msgstr "Ntibyemewe. Uburenganzira bw'umucuruzi bukenewe."
+
+msgid "Product added successfully!"
+msgstr "Igicuruzwa cyongewe neza!"
+
+msgid "Product updated successfully!"
+msgstr "Igicuruzwa kivuguruwe neza!"
+
+msgid "Cannot delete product \"{0}\" because it has associated sales records. Consider updating the product instead."
+msgstr "Ntushobora gusiba igicuruzwa \"{0}\" kuko gifite inyandiko z'ubucuruzi. Tekereza guhindura igicuruzwa aho kugisiba."
+
+msgid "Product deleted successfully!"
+msgstr "Igicuruzwa gisibwe neza!"
+
+msgid "Not enough stock available. Only {0} units left."
+msgstr "Nta bicuruzwa bihagije bihari. Hasigaye gusa {0}."
+
+msgid "Sale recorded successfully!"
+msgstr "Ubucuruzi bwanditswe neza!"
+
+msgid "Database initialized with admin and cashier users."
+msgstr "Ububiko bw'amakuru bwatangijwe n'abakoresha b'umuyobozi n'umucuruzi."
+
+msgid "Smart Inventory"
+msgstr "Ububiko Bwiza"
+
+msgid "Dashboard"
+msgstr "Ikibaho"
+
+msgid "Products"
+msgstr "Ibicuruzwa"
+
+msgid "Sales"
+msgstr "Ubucuruzi"
+
+msgid "My Sales"
+msgstr "Ubucuruzi Bwanjye"
+
+msgid "Logout"
+msgstr "Sohoka"
+
+msgid "Admin Dashboard"
+msgstr "Ikibaho cy'Umuyobozi"
+
+msgid "Overview of your inventory and sales"
+msgstr "Incamake y'ububiko n'ubucuruzi bwawe"
+
+msgid "Total Products"
+msgstr "Ibicuruzwa Byose"
+
+msgid "Total products in inventory"
+msgstr "Ibicuruzwa byose mu bubiko"
+
+msgid "View all products"
+msgstr "Reba ibicuruzwa byose"
+
+msgid "Low Stock Items"
+msgstr "Ibicuruzwa Bike"
+
+msgid "Products that need restocking"
+msgstr "Ibicuruzwa bikeneye kongerwamo"
+
+msgid "View details"
+msgstr "Reba ibisobanuro"
+
+msgid "Today's Sales"
+msgstr "Ubucuruzi bw'Uyu Munsi"
+
+msgid "Total sales made today"
+msgstr "Ubucuruzi bwose bwakozwe uyu munsi"
+
+msgid "View all sales"
+msgstr "Reba ubucuruzi bwose"
+
+msgid "Today's Revenue"
+msgstr "Amafaranga y'Uyu Munsi"
+
+msgid "Total revenue generated today"
+msgstr "Amafaranga yose yakusanyijwe uyu munsi"
+
+msgid "View sales report"
+msgstr "Reba raporo y'ubucuruzi"
+
+msgid "Today's Profit"
+msgstr "Inyungu y'Uyu Munsi"
+
+msgid "Total profit generated today"
+msgstr "Inyungu yose yakusanyijwe uyu munsi"
+
+msgid "View profit report"
+msgstr "Reba raporo y'inyungu"
+
+msgid "Low Stock Products"
+msgstr "Ibicuruzwa Bike"
+
+msgid "Category"
+msgstr "Icyiciro"
+
+msgid "Current Stock"
+msgstr "Ububiko Bwubu"
+
+msgid "Threshold"
+msgstr "Urugero"
+
+msgid "Action"
+msgstr "Igikorwa"
+
+msgid "Update"
+msgstr "Kuvugurura"
+
+msgid "All products are well stocked!"
+msgstr "Ibicuruzwa byose bihari bihagije!"
+
+msgid "Inventory by Category"
+msgstr "Ububiko Bwakurikije Icyiciro"
+
+msgid "Quick Actions"
+msgstr "Ibikorwa Byihuse"
+
+msgid "Add New Product"
+msgstr "Ongeramo Igicuruzwa Gishya"
+
+msgid "View Sales Report"
+msgstr "Reba Raporo y'Ubucuruzi"
+
+msgid "Manage Products"
+msgstr "Gucunga Ibicuruzwa"
+
+msgid "English"
+msgstr "Icyongereza"
+
+msgid "Kinyarwanda"
+msgstr "Ikinyarwanda"
+
+msgid "Efficient inventory and sales management for your mini market business."
+msgstr "Gucunga neza ububiko n'ubucuruzi bw'isoko ryawe rito."
+
+msgid "Quick Links"
+msgstr "Amahuriro Yihuse"
+
+msgid "Home"
+msgstr "Ahabanza"
+
+msgid "Language"
+msgstr "Ururimi"
+
+msgid "2025 Smart Inventory. All rights reserved."
+msgstr "2025 Ububiko Bwiza. Uburenganzira bwose bwihariwe."
+
+msgid "Cashier Dashboard"
+msgstr "Ikibaho cy'Umucuruzi"
+
+msgid "Sales you've made today"
+msgstr "Ubucuruzi wakoze uyu munsi"
+
+msgid "Revenue you've generated today"
+msgstr "Amafaranga winjije uyu munsi"
+
+msgid "Record New Sale"
+msgstr "Andika Ubucuruzi Bushya"
+
+msgid "Select Product"
+msgstr "Hitamo Igicuruzwa"
+
+msgid "-- Select a product --"
+msgstr "-- Hitamo igicuruzwa --"
+
+msgid "in stock"
+msgstr "mu bubiko"
+
+msgid "Quantity"
+msgstr "Ingano"
+
+msgid "Record Sale"
+msgstr "Andika Ubucuruzi"
+
+msgid "Time"
+msgstr "Igihe"
+
+msgid "Product"
+msgstr "Igicuruzwa"
+
+msgid "Price"
+msgstr "Igiciro"
+
+msgid "Purchase Price"
+msgstr "Igiciro cyo Kugura"
+
+msgid "Selling Price"
+msgstr "Igiciro cyo Kugurisha"
+
+msgid "The price at which you purchased this product"
+msgstr "Igiciro waguriyeho iki gicuruzwa"
+
+msgid "The price at which you will sell this product"
+msgstr "Igiciro uzagurisha iki gicuruzwa"
+
+msgid "Profit Margin"
+msgstr "Inyungu ku Ijana"
+
+msgid "You haven't recorded any sales today."
+msgstr "Ntabwo wanditse ubucuruzi uyu munsi."
+
+msgid "View All My Sales"
+msgstr "Reba Ubucuruzi Bwanjye Bwose"
+
+msgid "My Sales History"
+msgstr "Amateka y'Ubucuruzi Bwanjye"
+
+msgid "From Date"
+msgstr "Kuva Itariki"
+
+msgid "To Date"
+msgstr "Kugera Itariki"
+
+msgid "All Categories"
+msgstr "Ibyiciro Byose"
+
+msgid "Filter"
+msgstr "Shaka"
+
+msgid "Reset"
+msgstr "Tangira Bushya"
+
+msgid "Total Revenue"
+msgstr "Amafaranga Yose"
+
+msgid "Total revenue for selected period"
+msgstr "Amafaranga yose mu gihe cyahisemo"
+
+msgid "Total Profit"
+msgstr "Inyungu Yose"
+
+msgid "Total profit for selected period"
+msgstr "Inyungu yose mu gihe cyahisemo"
+
+msgid "Sales by Category"
+msgstr "Ubucuruzi Bwakurikije Icyiciro"
+
+msgid "Total Items"
+msgstr "Ibintu Byose"
+
+msgid "Revenue"
+msgstr "Amafaranga"
+
+msgid "Profit"
+msgstr "Inyungu"
+
+msgid "Detailed Sales"
+msgstr "Ubucuruzi Burambuye"
+
+msgid "Date & Time"
+msgstr "Itariki & Igihe"
+
+msgid "No sales found for the selected criteria."
+msgstr "Nta bucuruzi bwabonetse ku byo wahisemo."
+
+msgid "Total"
+msgstr "Igiteranyo"
+
+msgid "Actions"
+msgstr "Ibikorwa"
+
+msgid "Delete"
+msgstr "Siba"
+
+msgid "Are you sure you want to delete this sale? This will restore the stock to the product."
+msgstr "Urashaka koko gusiba ubu bucuruzi? Ibi bizongerera igicuruzwa mu bubiko."
+
+msgid "Sale of %(quantity)d %(product)s by %(cashier)s on %(date)s has been deleted and stock has been restored."
+msgstr "Ubucuruzi bwa %(quantity)d %(product)s bwakozwe na %(cashier)s ku wa %(date)s bwasibwe kandi igicuruzwa cyasubijwe mu bubiko."

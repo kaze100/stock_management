@@ -1,0 +1,33 @@
+2025-04-08 19:00:14,452 - template_fix - INFO - Updating templates for proper internationalization...
+2025-04-08 19:00:14,454 - template_fix - INFO - Processing template: templates\add_product.html
+2025-04-08 19:00:14,500 - template_fix - INFO - Template templates\add_product.html already uses translation functions
+2025-04-08 19:00:14,501 - template_fix - INFO - Successfully updated template: templates\add_product.html
+2025-04-08 19:00:14,501 - template_fix - INFO - Processing template: templates\admin_dashboard.html
+2025-04-08 19:00:14,504 - template_fix - INFO - Template templates\admin_dashboard.html already uses translation functions
+2025-04-08 19:00:14,506 - template_fix - INFO - Successfully updated template: templates\admin_dashboard.html
+2025-04-08 19:00:14,506 - template_fix - INFO - Processing template: templates\base.html
+2025-04-08 19:00:14,509 - template_fix - INFO - Template templates\base.html already uses translation functions
+2025-04-08 19:00:14,509 - template_fix - INFO - Added language selector to base template
+2025-04-08 19:00:14,511 - template_fix - INFO - Successfully updated template: templates\base.html
+2025-04-08 19:00:14,511 - template_fix - INFO - Processing template: templates\cashier_dashboard.html
+2025-04-08 19:00:14,513 - template_fix - INFO - Template templates\cashier_dashboard.html already uses translation functions
+2025-04-08 19:00:14,515 - template_fix - INFO - Successfully updated template: templates\cashier_dashboard.html
+2025-04-08 19:00:14,515 - template_fix - INFO - Processing template: templates\cashier_sales.html
+2025-04-08 19:00:14,518 - template_fix - INFO - Template templates\cashier_sales.html already uses translation functions
+2025-04-08 19:00:14,519 - template_fix - INFO - Successfully updated template: templates\cashier_sales.html
+2025-04-08 19:00:14,520 - template_fix - INFO - Processing template: templates\debug_login.html
+2025-04-08 19:00:14,521 - template_fix - INFO - Applied translations to templates\debug_login.html
+2025-04-08 19:00:14,523 - template_fix - INFO - Successfully updated template: templates\debug_login.html
+2025-04-08 19:00:14,524 - template_fix - INFO - Processing template: templates\edit_product.html
+2025-04-08 19:00:14,527 - template_fix - INFO - Template templates\edit_product.html already uses translation functions
+2025-04-08 19:00:14,529 - template_fix - INFO - Successfully updated template: templates\edit_product.html
+2025-04-08 19:00:14,529 - template_fix - INFO - Processing template: templates\login.html
+2025-04-08 19:00:14,531 - template_fix - INFO - Applied translations to templates\login.html
+2025-04-08 19:00:14,532 - template_fix - INFO - Successfully updated template: templates\login.html
+2025-04-08 19:00:14,533 - template_fix - INFO - Processing template: templates\manage_products.html
+2025-04-08 19:00:14,535 - template_fix - INFO - Template templates\manage_products.html already uses translation functions
+2025-04-08 19:00:14,536 - template_fix - INFO - Successfully updated template: templates\manage_products.html
+2025-04-08 19:00:14,538 - template_fix - INFO - Processing template: templates\view_sales.html
+2025-04-08 19:00:14,540 - template_fix - INFO - Template templates\view_sales.html already uses translation functions
+2025-04-08 19:00:14,540 - template_fix - INFO - Successfully updated template: templates\view_sales.html
+2025-04-08 19:00:14,542 - template_fix - INFO - Successfully updated 10 out of 10 templates

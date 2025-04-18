@@ -1,0 +1,7 @@
+2025-04-08 18:57:59,920 - emergency_fix - INFO - Resetting database...
+2025-04-08 18:57:59,966 - emergency_fix - INFO - Created database backup: new_inventory.db.backup_20250408_185759
+2025-04-08 18:57:59,968 - emergency_fix - INFO - Renamed existing database to new_inventory.db.old
+2025-04-08 18:57:59,998 - emergency_fix - INFO - Successfully reset database
+2025-04-08 18:57:59,999 - emergency_fix - INFO - Completely rewriting app.py...
+2025-04-08 18:58:00,001 - emergency_fix - INFO - Created backup: app.py.emergency_backup_20250408_185800
+2025-04-08 18:58:00,002 - emergency_fix - INFO - Successfully rewrote app.py

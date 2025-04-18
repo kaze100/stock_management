@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ _('My Sales') }} - {{ _('Smart Inventory') }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>{{ _('My Sales History') }}</h2>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('view_cashier_sales') }}" class="mb-3">
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="start_date" class="form-label">{{ _('From Date') }}</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control" value="{{ start_date }}">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="end_date" class="form-label">{{ _('To Date') }}</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control" value="{{ end_date }}">
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="category" class="form-label">{{ _('Category') }}</label>
+                        <select id="category" name="category" class="form-control">
+                            <option value="all">{{ _('All Categories') }}</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>
+                                {{ cat }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">{{ _('Filter') }}</button>
+                    <a href="{{ url_for('view_cashier_sales') }}" class="btn btn-secondary ml-2">{{ _('Reset') }}</a>
+                </div>
+            </div>
+        </form>
+        
+        <div class="widget widget-success mb-3">
+            <h3 class="widget-title">{{ _('Total Revenue') }}</h3>
+            <div class="widget-value">RWF {{ "%.0f"|format(total_revenue) }}</div>
+            <p class="widget-description">{{ _('Total revenue for selected period') }}</p>
+        </div>
+        
+        <!-- Category Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>{{ _('Sales by Category') }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for category, data in category_summary.items() %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-header category-header">
+                                <h4>{{ category }}</h4>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>{{ _('Total Items') }}:</strong> {{ data.count }}</p>
+                                <p><strong>{{ _('Revenue') }}:</strong> RWF {{ "%.0f"|format(data.revenue) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        {% if sales|length > 0 %}
+        <h3>{{ _('Detailed Sales') }}</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{{ _('Date & Time') }}</th>
+                    <th>{{ _('Product') }}</th>
+                    <th>{{ _('Category') }}</th>
+                    <th>{{ _('Quantity') }}</th>
+                    <th>{{ _('Price') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.date_sold.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ sale.product.name }}</td>
+                    <td>{{ sale.product.category }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>RWF {{ "%.0f"|format(sale.total_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>{{ _('No sales found for the selected criteria.') }}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .category-header {
+        background-color: var(--primary-light);
+        color: var(--primary-dark);
+    }
+    
+    .category-header h4 {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
