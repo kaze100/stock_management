@@ -34,11 +34,11 @@
                                         <td>RWF {{ "%.0f"|format(item.total_amount) }}</td>
                                         <td>
                                             <button type="button" class="btn btn-primary btn-sm" 
-                                                data-toggle="modal" 
-                                                data-target="#cashoutModal"
-                                                data-cashier-id="{{ item.cashier.id }}"
-                                                data-cashier-name="{{ item.cashier.username }}"
-                                                data-amount="{{ item.total_amount }}">
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#cashoutModal"
+                                                data-bs-cashier-id="{{ item.cashier.id }}"
+                                                data-bs-cashier-name="{{ item.cashier.username }}"
+                                                data-bs-amount="{{ item.total_amount }}">
                                                 {{ _('Cashout') }}
                                             </button>
                                         </td>
@@ -108,14 +108,12 @@
 </div>
 
 <!-- Cashout Modal -->
-<div class="modal fade" id="cashoutModal" tabindex="-1" role="dialog" aria-labelledby="cashoutModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="cashoutModal" tabindex="-1" aria-labelledby="cashoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="cashoutModalLabel">{{ _('Confirm Cashout') }}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ url_for('admin_cashout') }}" method="POST">
                 <div class="modal-body">
@@ -124,13 +122,13 @@
                     
                     <input type="hidden" id="cashierId" name="cashier_id">
                     
-                    <div class="form-group">
-                        <label for="note">{{ _('Note (Optional)') }}</label>
+                    <div class="mb-3">
+                        <label for="note" class="form-label">{{ _('Note (Optional)') }}</label>
                         <textarea id="note" name="note" class="form-control" rows="3" placeholder="{{ _('Add any notes about this cashout...') }}"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ _('Cancel') }}</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Cancel') }}</button>
                     <button type="submit" class="btn btn-primary">{{ _('Confirm Cashout') }}</button>
                 </div>
             </form>
@@ -141,17 +139,32 @@
 
 {% block extra_js %}
 <script>
-    $(document).ready(function() {
-        $('#cashoutModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget);
-            var cashierId = button.data('cashier-id');
-            var cashierName = button.data('cashier-name');
-            var amount = button.data('amount');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the modal element
+        var cashoutModal = document.getElementById('cashoutModal');
+        
+        // Add event listener for when the modal is shown
+        cashoutModal.addEventListener('show.bs.modal', function(event) {
+            // Button that triggered the modal
+            var button = event.relatedTarget;
             
-            var modal = $(this);
-            modal.find('#cashierId').val(cashierId);
-            modal.find('#cashierName').text(cashierName);
-            modal.find('#cashoutAmount').text('RWF ' + amount.toFixed(0));
+            // Extract info from data-bs-* attributes
+            var cashierId = button.getAttribute('data-bs-cashier-id');
+            var cashierName = button.getAttribute('data-bs-cashier-name');
+            var amount = parseFloat(button.getAttribute('data-bs-amount'));
+            
+            console.log('Cashier ID:', cashierId);
+            console.log('Cashier Name:', cashierName);
+            console.log('Amount:', amount);
+            
+            // Update the modal's content
+            var modalCashierId = cashoutModal.querySelector('#cashierId');
+            var modalCashierName = cashoutModal.querySelector('#cashierName');
+            var modalAmount = cashoutModal.querySelector('#cashoutAmount');
+            
+            modalCashierId.value = cashierId;
+            modalCashierName.textContent = cashierName;
+            modalAmount.textContent = 'RWF ' + amount.toFixed(0);
         });
     });
 </script>

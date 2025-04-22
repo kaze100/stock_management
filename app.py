@@ -94,11 +94,11 @@ class Product(db.Model):
     low_stock_threshold = db.Column(db.Integer, default=10)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Add fields for packaged products
-    is_packaged = db.Column(db.Boolean, default=False)
-    units_per_package = db.Column(db.Integer, default=1)
-    individual_price = db.Column(db.Float, default=0)
-    individual_stock = db.Column(db.Integer, default=0)
+    # Note: Packaged product fields are commented out to match existing database schema
+    # is_packaged = db.Column(db.Boolean, default=False)
+    # units_per_package = db.Column(db.Integer, default=1)
+    # individual_price = db.Column(db.Float, default=0)
+    # individual_stock = db.Column(db.Integer, default=0)
     
     def is_low_stock(self):
         return self.stock <= self.low_stock_threshold
@@ -729,6 +729,10 @@ def admin_cashout():
     
     cashiers = User.query.filter_by(role='cashier').all()
     
+    # Debug logging
+    print(f"Request method: {request.method}")
+    print(f"Form data: {request.form}")
+    
     if request.method == 'POST':
         cashier_id = request.form.get('cashier_id')
         note = request.form.get('note', '')
@@ -828,6 +832,41 @@ def cashout_details(cashout_id):
         sales=sales
     )
 
+@app.route('/admin/cashout/reverse/<int:cashout_id>', methods=['POST'])
+@login_required
+def reverse_cashout(cashout_id):
+    if current_user.role != 'admin':
+        flash(_('Access denied. Admin privileges required.'), 'danger')
+        return redirect(url_for('login'))
+    
+    # Get the cashout record
+    cashout = Cashout.query.get_or_404(cashout_id)
+    
+    # Get all sales associated with this cashout
+    sales = Sale.query.filter_by(cashout_id=cashout_id).all()
+    
+    if not sales:
+        flash(_('No sales found for this cashout.'), 'warning')
+        return redirect(url_for('cashout_details', cashout_id=cashout_id))
+    
+    try:
+        # Mark all sales as not cashed out
+        for sale in sales:
+            sale.is_cashed_out = False
+            sale.cashout_id = None
+        
+        # Add a note to the cashout record indicating it was reversed
+        cashout.note = f"{cashout.note or ''} [REVERSED: {datetime.now().strftime('%Y-%m-%d %H:%M')}]"
+        
+        db.session.commit()
+        
+        flash(_('Cashout successfully reversed. All associated sales have been marked as not cashed out.'), 'success')
+        return redirect(url_for('admin_cashout'))
+    except Exception as e:
+        db.session.rollback()
+        flash(_('Error reversing cashout: {}').format(str(e)), 'danger')
+        return redirect(url_for('cashout_details', cashout_id=cashout_id))
+
 @app.route('/cashier/sales_status')
 @login_required
 def cashier_sales_status():
@@ -917,6 +956,15 @@ def initialize_database():
         db.session.add(cashier)
     
     db.session.commit()
+
+@app.route('/test/cashout')
+@login_required
+def test_cashout():
+    if current_user.role != 'admin':
+        flash(_('Access denied. Admin privileges required.'), 'danger')
+        return redirect(url_for('login'))
+    
+    return render_template('test_cashout.html')
 
 if __name__ == '__main__':
     with app.app_context():

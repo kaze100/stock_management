@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Test Cashout{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Test Cashout Form</h1>
+    <form action="{{ url_for('admin_cashout') }}" method="POST">
+        <div class="mb-3">
+            <label for="cashier_id" class="form-label">Cashier ID</label>
+            <input type="text" class="form-control" id="cashier_id" name="cashier_id" value="2">
+        </div>
+        <div class="mb-3">
+            <label for="note" class="form-label">Note</label>
+            <textarea class="form-control" id="note" name="note">Test cashout</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}
