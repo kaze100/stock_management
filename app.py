@@ -381,8 +381,22 @@ def manage_products():
         flash(_('Access denied. Admin privileges required.'), 'danger')
         return redirect(url_for('login'))
     
-    products = Product.query.all()
-    return render_template('manage_products.html', products=products)
+    search_query = request.args.get('search', '')
+    
+    if search_query:
+        # Search by name, description, or category
+        search = f"%{search_query}%"
+        products = Product.query.filter(
+            db.or_(
+                Product.name.ilike(search),
+                Product.description.ilike(search),
+                Product.category.ilike(search)
+            )
+        ).all()
+    else:
+        products = Product.query.all()
+    
+    return render_template('manage_products.html', products=products, search_query=search_query)
 
 @app.route('/admin/products/add', methods=['GET', 'POST'])
 @login_required
@@ -565,27 +579,17 @@ def sell_product():
     
     product_id = request.form.get('product_id')
     quantity = int(request.form.get('quantity', 1))
-    sale_type = request.form.get('sale_type', 'package')  # Default to package if not specified
     
     product = Product.query.get_or_404(product_id)
     
-    # Handle different sale types for packaged products
-    if product.is_packaged and sale_type == 'individual':
-        # Selling individual units
-        if product.individual_stock < quantity:
-            flash(_('Not enough individual units available. Only {} units left.').format(product.individual_stock), 'danger')
-            return redirect(url_for('cashier_dashboard'))
-        
-        total_price = product.individual_price * quantity
-        product.individual_stock -= quantity
-    else:
-        # Selling as package or non-packaged product
-        if product.stock < quantity:
-            flash(_('Not enough stock available. Only {} units left.').format(product.stock), 'danger')
-            return redirect(url_for('cashier_dashboard'))
-        
-        total_price = product.price * quantity
-        product.stock -= quantity
+    # Check if we have enough stock
+    if product.stock < quantity:
+        flash(_('Not enough stock available. Only {} units left.').format(product.stock), 'danger')
+        return redirect(url_for('cashier_dashboard'))
+    
+    # Calculate total price and update stock
+    total_price = product.price * quantity
+    product.stock -= quantity
     
     # Create the sale record
     sale = Sale(
