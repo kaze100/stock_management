@@ -414,12 +414,6 @@ def add_product():
         stock = int(request.form.get('stock', 0))
         low_stock_threshold = int(request.form.get('low_stock_threshold', 10))
         
-        # Handle packaged product fields
-        is_packaged = 'is_packaged' in request.form
-        units_per_package = int(request.form.get('units_per_package', 1))
-        individual_price = float(request.form.get('individual_price', 0))
-        individual_stock = int(request.form.get('individual_stock', 0))
-        
         # Create new product
         new_product = Product(
             name=name,
@@ -428,11 +422,7 @@ def add_product():
             purchase_price=purchase_price,
             price=price,
             stock=stock,
-            low_stock_threshold=low_stock_threshold,
-            is_packaged=is_packaged,
-            units_per_package=units_per_package,
-            individual_price=individual_price,
-            individual_stock=individual_stock
+            low_stock_threshold=low_stock_threshold
         )
         
         db.session.add(new_product)
