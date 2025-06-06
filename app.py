@@ -461,11 +461,7 @@ def edit_product(product_id):
         product.stock = int(request.form.get('stock', 0))
         product.low_stock_threshold = int(request.form.get('low_stock_threshold', 10))
         
-        # Handle packaged product fields
-        product.is_packaged = 'is_packaged' in request.form
-        product.units_per_package = int(request.form.get('units_per_package', 1))
-        product.individual_price = float(request.form.get('individual_price', 0))
-        product.individual_stock = int(request.form.get('individual_stock', 0))
+        # Packaged product fields are commented out in the model, so we don't update them here
         
         db.session.commit()
         
